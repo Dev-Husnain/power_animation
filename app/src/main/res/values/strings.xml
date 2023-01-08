@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Charging Animation</string>
+    <string name="usb_type">USB Type</string>
+    <string name="ac_type">AC Type</string>
+    <string name="ac_con">AC Connected</string>
+    <string name="usb">USB Connected</string>
+    <string name="connected">Connected</string>
+    <string name="not_connected">Not Connected</string>
+</resources>

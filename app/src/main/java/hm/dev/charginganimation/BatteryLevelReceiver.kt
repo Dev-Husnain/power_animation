@@ -2,13 +2,20 @@ package hm.dev.charginganimation
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.BatteryManager
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.widget.Toast
-import hm.dev.charginganimation.utils.MyConstants
 
 
-class BatteryLevelReceiver : BroadcastReceiver() {
+
+ class BatteryLevelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+
+        //auto start permission
+        //run in background permission
+
+
 
 //        if (intent.action == Intent.ACTION_BATTERY_CHANGED){
 //            val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
@@ -37,9 +44,18 @@ class BatteryLevelReceiver : BroadcastReceiver() {
 //
 //        }
 
-
+//
         when(intent.action){
             Intent.ACTION_POWER_CONNECTED->{
+                val i = Intent(context, TestActivity::class.java)
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                i.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+                i.addFlags(Intent.FLAG_FROM_BACKGROUND)
+                i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
+                context.startActivity(i)
+                val ringtoneUri: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val ringtoneSound: Ringtone = RingtoneManager.getRingtone(context, ringtoneUri)
+            ringtoneSound.play()
                 Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
             }
             Intent.ACTION_POWER_DISCONNECTED->{

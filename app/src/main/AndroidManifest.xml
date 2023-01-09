@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND"/>
+    <uses-permission android:name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
 
     <application
         android:allowBackup="true"
@@ -37,7 +42,7 @@
         </activity> <!-- android:directBootAware="true" -->
         <receiver
             android:name=".BatteryLevelReceiver"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="false" >
             <intent-filter>
                 <action android:name="android.intent.action.BATTERY_CHANGED" />
@@ -46,7 +51,11 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".BatteryService" />
+        <service android:name=".BatteryService"
+            android:exported="false"
+            android:enabled="true"
+            android:stopWithTask="false"
+            android:foregroundServiceType="dataSync"/>
     </application>
 
 </manifest>

@@ -1,8 +1,9 @@
 package hm.dev.charginganimation
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
-import android.widget.TextView
+import android.provider.Settings
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -10,21 +11,26 @@ import hm.dev.charginganimation.databinding.ActivityMainBinding
 import hm.dev.charginganimation.utils.MyConstants
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var receiver: BatteryLevelReceiver
+      lateinit var binding: ActivityMainBinding
+      lateinit var receiver: BatteryLevelReceiver
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        checkOverlayPermission()
+
+
 
 
         //val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         val filter = IntentFilter()
         filter.addAction(Intent.ACTION_POWER_CONNECTED)
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED)
 
         receiver = BatteryLevelReceiver()
         this.registerReceiver(receiver, filter)
+
 
 
 
@@ -58,14 +64,35 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        startService(Intent(applicationContext,BatteryService::class.java))
+
+      //  startService(Intent(applicationContext,BatteryService::class.java))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(Intent(this,BatteryService::class.java))
+        }else{
+            ContextCompat.startForegroundService(this,Intent(this,BatteryService::class.java))
+        }
 
 
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(receiver)
+        val filter = IntentFilter()
+        filter.addAction(Intent.ACTION_POWER_CONNECTED)
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED)
+        receiver = BatteryLevelReceiver()
+        this.registerReceiver(receiver, filter)
+    }
+
+    // method to ask user to grant the Overlay permission
+    fun checkOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                val myIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                startActivity(myIntent)
+            }
+        }
     }
 
 }

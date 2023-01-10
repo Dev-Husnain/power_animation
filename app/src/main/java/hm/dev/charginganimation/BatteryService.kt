@@ -21,7 +21,7 @@ class BatteryService() : Service() {
 
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int     {
         // Do your foreground service work here
 
 

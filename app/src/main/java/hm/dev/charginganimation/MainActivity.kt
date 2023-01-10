@@ -1,35 +1,43 @@
 package hm.dev.charginganimation
+import android.app.LauncherActivity
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import hm.dev.charginganimation.databinding.ActivityMainBinding
 import hm.dev.charginganimation.utils.MyConstants
 
 class MainActivity : AppCompatActivity() {
-      lateinit var binding: ActivityMainBinding
-      lateinit var receiver: BatteryLevelReceiver
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var receiver: BatteryLevelReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        checkOverlayPermission()
+        supportActionBar?.hide()
 
 
 
 
-        //val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+
         val filter = IntentFilter()
         filter.addAction(Intent.ACTION_POWER_CONNECTED)
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         filter.addAction(Intent.ACTION_BATTERY_CHANGED)
 
+
+        intent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+
         receiver = BatteryLevelReceiver()
-        this.registerReceiver(receiver, filter)
+         this.registerReceiver(receiver, filter)
+
+
 
 
 
@@ -49,8 +57,6 @@ class MainActivity : AppCompatActivity() {
         MyConstants.batteryTypeAC.observe(this){
             if (MyConstants.batteryTypeAC.value==true){
                 binding.aCType.text=getString(R.string.ac_con)
-                Toast.makeText(applicationContext, MyConstants.batteryTypeAC.value.toString(), Toast.LENGTH_SHORT).show()
-
             }
 
         }
@@ -64,35 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-      //  startService(Intent(applicationContext,BatteryService::class.java))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this,BatteryService::class.java))
-        }else{
-            ContextCompat.startForegroundService(this,Intent(this,BatteryService::class.java))
-        }
-
+        startService(Intent(applicationContext,BatteryService::class.java))
 
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        val filter = IntentFilter()
-        filter.addAction(Intent.ACTION_POWER_CONNECTED)
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
-        filter.addAction(Intent.ACTION_BATTERY_CHANGED)
-        receiver = BatteryLevelReceiver()
-        this.registerReceiver(receiver, filter)
-    }
-
-    // method to ask user to grant the Overlay permission
-    fun checkOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                val myIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                startActivity(myIntent)
-            }
-        }
-    }
-
 }

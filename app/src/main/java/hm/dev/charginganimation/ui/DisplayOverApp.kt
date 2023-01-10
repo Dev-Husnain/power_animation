@@ -32,7 +32,8 @@ class DisplayOverApp : AppCompatActivity() {
 
    private fun askPermission(){
     val myIntent = Intent(
-        Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+        Settings.ACTION_MANAGE_OVERLAY_PERMISSION
+    )
     requestSettingLauncher.launch(myIntent)
 }
     private fun checkOverlayPermission(): Boolean {

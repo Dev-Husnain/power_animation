@@ -1,17 +1,19 @@
-package hm.dev.charginganimation
+package hm.dev.charginganimation.services
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.media.Ringtone
-import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
+import hm.dev.charginganimation.R
+import hm.dev.charginganimation.ui.MainActivity
+import hm.dev.charginganimation.ui.TestActivity
+import java.util.concurrent.TimeUnit
 
 
 class BatteryService() : Service() {
@@ -39,12 +41,21 @@ class BatteryService() : Service() {
             .setContentIntent(pendingIntent)
             .build()
         startForeground(1, notification)
+        Log.d("serviceRunning", "onStartCommand: serviceRunning")
         receiverThread()
 
 
-
-
         return START_STICKY
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+//        startForeground(9999, Notification())
+//        Log.d("serviceCreated", "onCreate: serviceCreated")
     }
 
       fun createNotificationChannel() {
@@ -65,23 +76,17 @@ class BatteryService() : Service() {
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
+
 
 
     fun receiverThread(){
         try {
             Thread.sleep(4000)
-        }catch (e:InterruptedException){
-            Log.d("serviceInterrupted", "receiverThread: ${e.message}")
-        }finally {
             val receiver = Intent(this, BatteryLevelReceiver::class.java)
             sendBroadcast(receiver)
-//            val intent=Intent(this,TestActivity::class.java)
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//            startActivity(intent)
-            Log.d("serviceCalled", "receiverThread: called")
+            Log.d("receiverThreadRunning", "receiverThread: Thread running")
+        }catch (e:InterruptedException){
+            Log.d("serviceInterrupted", "receiverThread: ${e.message}")
         }
     }
 

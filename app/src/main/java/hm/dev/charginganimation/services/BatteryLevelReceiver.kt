@@ -1,15 +1,17 @@
-package hm.dev.charginganimation
+package hm.dev.charginganimation.services
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.BatteryManager
 import android.util.Log
 import android.widget.Toast
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import hm.dev.charginganimation.ui.TestActivity
 import hm.dev.charginganimation.utils.MyConstants
 
 
@@ -45,15 +47,10 @@ class BatteryLevelReceiver : BroadcastReceiver() {
 
         when (intent.action) {
             Intent.ACTION_POWER_CONNECTED -> {
-
                 val appIntent = Intent(context, TestActivity::class.java)
                 appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
-                context.packageManager.getLaunchIntentForPackage("hm.dev.charginganimation")
                 context.startActivity(appIntent)
-
-
-                //context.startActivity(appIntent)
 
                 //context.sendBroadcast(appIntent)
                 Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()

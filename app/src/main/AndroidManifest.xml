@@ -4,7 +4,13 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND"/>
+    <uses-permission android:name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
 
 
 
@@ -19,21 +25,21 @@
         android:theme="@style/Theme.ChargingAnimation"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".DisplayOverApp"
+            android:name=".ui.DisplayOverApp"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".TestActivity"
+            android:name=".ui.TestActivity"
             android:exported="false"
             android:label="Test Activity">
             <meta-data
@@ -41,7 +47,7 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".Splash"
+            android:name=".ui.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -53,8 +59,9 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity> <!-- android:directBootAware="true" -->
+
         <receiver
-            android:name=".BatteryLevelReceiver"
+            android:name=".services.BatteryLevelReceiver"
             android:enabled="true"
             android:priority="1000"
             android:exported="false">
@@ -67,7 +74,16 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".BatteryService" />
+        <service android:name=".services.BatteryService"
+            android:exported="false"
+            android:enabled="true"
+            android:stopWithTask="false"
+            android:foregroundServiceType="dataSync"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+
+
+
     </application>
 
 </manifest>

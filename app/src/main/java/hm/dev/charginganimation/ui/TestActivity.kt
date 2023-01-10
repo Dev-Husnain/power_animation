@@ -1,15 +1,11 @@
-package hm.dev.charginganimation
+package hm.dev.charginganimation.ui
 
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import hm.dev.charginganimation.services.BatteryLevelReceiver
 import hm.dev.charginganimation.databinding.ActivityTestBinding
 import hm.dev.charginganimation.utils.MyConstants
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 class TestActivity : AppCompatActivity() {
@@ -20,6 +16,7 @@ class TestActivity : AppCompatActivity() {
         binding=ActivityTestBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.hide()
+        this.packageManager.getLaunchIntentForPackage("hm.dev.charginganimation")
 
 
         setTimeAndBattery()

@@ -1,4 +1,4 @@
-package hm.dev.charginganimation
+package hm.dev.charginganimation.ui
 
 import android.content.Intent
 import android.os.Build
@@ -44,7 +44,7 @@ class DisplayOverApp : AppCompatActivity() {
     }
 
     private fun startNewNext(){
-        startActivity(Intent(this,MainActivity::class.java))
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
 
 

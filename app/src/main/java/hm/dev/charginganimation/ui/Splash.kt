@@ -1,19 +1,20 @@
-package hm.dev.charginganimation
+package hm.dev.charginganimation.ui
 
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import hm.dev.charginganimation.R
 
 class Splash : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
         if (checkOverlayPermission()){
-            startActivity(Intent(this@Splash,MainActivity::class.java))
+            startActivity(Intent(this@Splash, MainActivity::class.java))
         }else{
-            startActivity(Intent(this@Splash,DisplayOverApp::class.java))
+            startActivity(Intent(this@Splash, DisplayOverApp::class.java))
         }
     }
 

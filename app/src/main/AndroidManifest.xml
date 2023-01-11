@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE" />
-
     <uses-permission
         android:name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND"
         tools:ignore="ProtectedPermissions" />
@@ -116,10 +115,7 @@
             android:process=":powerConnected1"
             android:foregroundServiceType="dataSync"
             android:stopWithTask="false" />
-        <service
-            android:name=".services.MyWorker"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
+
     </application>
 
 </manifest>

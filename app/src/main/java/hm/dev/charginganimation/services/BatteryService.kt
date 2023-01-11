@@ -2,14 +2,18 @@ package hm.dev.charginganimation.services
 
 import android.app.*
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
 import android.util.Log.d
 import androidx.core.app.NotificationCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import hm.dev.charginganimation.R
 import hm.dev.charginganimation.ui.MainActivity
 import hm.dev.charginganimation.ui.TestActivity
+import java.util.concurrent.TimeUnit
 
 
 class BatteryService : Service() {
@@ -18,6 +22,8 @@ class BatteryService : Service() {
         const val CHANNEL_ID = "ForegroundServiceChannel"
 
     }
+
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Do your foreground service work here
@@ -36,14 +42,15 @@ class BatteryService : Service() {
             .setSmallIcon(R.drawable.ic_baseline_notifications_24)
             .setContentIntent(pendingIntent)
             .build()
-        startForeground(10103, notification)
+        startForeground(101, notification)
         d("serviceRunning", "onStartCommand: serviceRunning")
-        receiverThread()
+
         return START_STICKY
     }
 
 
     override fun onBind(intent: Intent?): IBinder? {
+        receiverThread()
         return null
     }
 
@@ -75,21 +82,27 @@ class BatteryService : Service() {
     fun receiverThread() {
         try {
             Thread.sleep(4000)
-            val receiver = Intent(this, BatteryLevelReceiver::class.java)
-            sendBroadcast(receiver)
-            d("receiverThreadRunning", "receiverThread: Thread running")
+            val receiver =BatteryLevelReceiver()
+            val filter = IntentFilter()
+            val filterBoot = IntentFilter()
+            filter.addAction(Intent.ACTION_POWER_CONNECTED)
+            filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+            filter.addAction(Intent.ACTION_BATTERY_CHANGED)
+            filterBoot.addAction(Intent.ACTION_BOOT_COMPLETED)
+           registerReceiver(receiver, filter)
+                d("receiverThreadRunning", "receiverThread: Thread running")
+
         } catch (e: InterruptedException) {
             d("serviceInterrupted", "receiverThread: ${e.message}")
         }
     }
+
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         val intent = Intent(this, TestActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
 
-
     }
-
 
 }

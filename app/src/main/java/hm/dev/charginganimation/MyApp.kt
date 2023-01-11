@@ -2,18 +2,17 @@ package hm.dev.charginganimation
 
 import android.app.Application
 import android.util.Log
-import androidx.work.Configuration
-import androidx.work.WorkManager
+import androidx.work.*
+import hm.dev.charginganimation.services.MyWorker
+import java.util.concurrent.TimeUnit
 
-class MyApp: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        val configuration = Configuration.Builder()
-            .setMinimumLoggingLevel(Log.DEBUG)
-            .build()
-
-        WorkManager.initialize(this, configuration)
-
+class MyApp: Application(), Configuration.Provider {
+        override fun getWorkManagerConfiguration() =
+            Configuration.Builder()
+                .setMinimumLoggingLevel(android.util.Log.INFO)
+                .build()
     }
 
-}
+
+
+

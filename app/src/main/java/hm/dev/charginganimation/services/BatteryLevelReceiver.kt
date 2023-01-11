@@ -53,7 +53,6 @@ class BatteryLevelReceiver : BroadcastReceiver() {
                 appIntent.flags = Intent.FLAG_FROM_BACKGROUND
                 appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
                 context.startActivity(appIntent)
-
                 //context.sendBroadcast(appIntent)
                 Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
                 Log.d("inBackground", "onReceive: connected to power")

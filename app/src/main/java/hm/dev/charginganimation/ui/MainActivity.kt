@@ -12,9 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.work.BackoffPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import hm.dev.charginganimation.R
 import hm.dev.charginganimation.databinding.ActivityMainBinding
 import hm.dev.charginganimation.services.BatteryLevelReceiver
@@ -34,27 +32,42 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+
         supportActionBar?.hide()
 
-        //startBroadCastReceiver()
+       workManager()
+        startBroadCastReceiver()
         //getAutoStartPermission()
 
 
 
         //oppoAutoPermission()
-        workManager()
+
 
 
 
 
     }
 
+
+
     private fun workManager() {
-        val repeatingWork = PeriodicWorkRequestBuilder<MyWorker>(10, TimeUnit.SECONDS)
+        val constraints= Constraints.Builder()
+            .setRequiresCharging(true)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val repeatingWork = PeriodicWorkRequestBuilder<MyWorker>(5, TimeUnit.SECONDS)
             .setInitialDelay(10, TimeUnit.SECONDS)
-            .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 5, TimeUnit.SECONDS)
+            .setConstraints(constraints)
             .build()
         WorkManager.getInstance(this).enqueue(repeatingWork)
+
+
+//        val onetimework= OneTimeWorkRequestBuilder<MyWorker>().setInitialDelay(15,TimeUnit.SECONDS).build()
+//        WorkManager.getInstance(this).enqueue(onetimework)
 
     }
 

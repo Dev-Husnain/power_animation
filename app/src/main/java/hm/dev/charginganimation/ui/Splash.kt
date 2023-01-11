@@ -13,8 +13,10 @@ class Splash : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
         if (checkOverlayPermission()){
             startActivity(Intent(this@Splash, MainActivity::class.java))
+            finish()
         }else{
             startActivity(Intent(this@Splash, DisplayOverApp::class.java))
+            finish()
         }
     }
 

@@ -8,74 +8,162 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.work.BackoffPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import hm.dev.charginganimation.R
 import hm.dev.charginganimation.databinding.ActivityMainBinding
 import hm.dev.charginganimation.services.BatteryLevelReceiver
 import hm.dev.charginganimation.services.BatteryService
+import hm.dev.charginganimation.services.BootReceiver
+import hm.dev.charginganimation.services.MyWorker
 import hm.dev.charginganimation.utils.MyConstants
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var receiver: BatteryLevelReceiver
+    private lateinit var receiver2: BootReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.hide()
 
-        startBroadCastReceiver()
-        getAutoStartPermission()
+        //startBroadCastReceiver()
+        //getAutoStartPermission()
 
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri: Uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
+
+
+        //oppoAutoPermission()
+        workManager()
 
 
 
 
     }
 
+    private fun workManager() {
+        val repeatingWork = PeriodicWorkRequestBuilder<MyWorker>(10, TimeUnit.SECONDS)
+            .setInitialDelay(10, TimeUnit.SECONDS)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+            .build()
+        WorkManager.getInstance(this).enqueue(repeatingWork)
+
+    }
+
+    private fun oppoAutoPermission() {
+        if (Build.MANUFACTURER.equals("OPPO", ignoreCase = true)) {
+            val packageName = packageManager.getLaunchIntentForPackage(packageName)?.`package`
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            val uri = Uri.fromParts("package", packageName, null)
+            intent.data = uri
+            startActivity(intent)
+        }
+    }
+
     private fun getAutoStartPermission() {
-        val POWERMANAGER_INTENTS = arrayOf(Intent().setComponent(ComponentName("com.miui.securitycenter",
-            "com.miui.permcenter.autostart.AutoStartManagementActivity")),
-            Intent().setComponent(ComponentName("com.letv.android.letvsafe",
-                "com.letv.android.letvsafe.AutobootManageActivity")),
-            Intent().setComponent(ComponentName("com.huawei.systemmanager",
-                "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity")),
+        val POWERMANAGER_INTENTS = arrayOf(
             Intent().setComponent(
-                ComponentName("com.huawei.systemmanager",
-                    "com.huawei.systemmanager.optimize.process.ProtectActivity")),
+                ComponentName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.autostart.AutoStartManagementActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.letv.android.letvsafe",
+                    "com.letv.android.letvsafe.AutobootManageActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.huawei.systemmanager",
+                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.huawei.systemmanager",
+                    "com.huawei.systemmanager.optimize.process.ProtectActivity"
+                )
+            ),
 
-            Intent().setComponent(ComponentName("com.huawei.systemmanager",
-                "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity")),
+            Intent().setComponent(
+                ComponentName(
+                    "com.huawei.systemmanager",
+                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
+                )
+            ),
 
             Intent().setComponent(
-                ComponentName("com.coloros.safecenter",
-                    "com.coloros.safecenter.permission.startup.StartupAppListActivity") ),
-            Intent().setComponent(ComponentName("com.coloros.safecenter",
-                "com.coloros.safecenter.startupapp.StartupAppListActivity")),
+                ComponentName(
+                    "com.coloros.safecenter",
+                    "com.coloros.safecenter.permission.startup.StartupAppListActivity"
+                )
+            ),
             Intent().setComponent(
-                ComponentName("com.oppo.safe",
-                    "com.oppo.safe.permission.startup.StartupAppListActivity")),
+                ComponentName(
+                    "com.coloros.safecenter",
+                    "com.coloros.safecenter.startupapp.StartupAppListActivity"
+                )
+            ),
             Intent().setComponent(
-                ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")),
-            Intent().setComponent(ComponentName("com.iqoo.secure",
-                "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager")),
-            Intent().setComponent(ComponentName("com.vivo.permissionmanager",
-                "com.vivo.permissionmanager.activity.BgStartUpManagerActivity")),
-            Intent().setComponent(ComponentName("com.samsung.android.lool",
-                "com.samsung.android.sm.ui.battery.BatteryActivity")),
-            Intent().setComponent(ComponentName("com.htc.pitroad",
-                "com.htc.pitroad.landingpage.activity.LandingPageActivity")),
-            Intent().setComponent(ComponentName("com.asus.mobilemanager",
-                "com.asus.mobilemanager.MainActivity"
+                ComponentName(
+                    "com.oppo.safe",
+                    "com.oppo.safe.permission.startup.StartupAppListActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.oppo.safe",
+                    "com.oppo.safe.permission.floatwindow.FloatWindowListActivity"
+                )
+            ),
 
-            )
+
+            Intent().setComponent(
+                ComponentName(
+                    "com.iqoo.secure",
+                    "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.iqoo.secure",
+                    "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.vivo.permissionmanager",
+                    "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.samsung.android.lool",
+                    "com.samsung.android.sm.ui.battery.BatteryActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.htc.pitroad",
+                    "com.htc.pitroad.landingpage.activity.LandingPageActivity"
+                )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.asus.mobilemanager",
+                    "com.asus.mobilemanager.MainActivity"
+
+                )
             )
         )
 
@@ -83,10 +171,10 @@ class MainActivity : AppCompatActivity() {
 
         for (intent in POWERMANAGER_INTENTS)
             if (packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
-            // show dialog to ask user action
-            showAlert(intent)
-            break
-        }
+                // show dialog to ask user action
+                showAlert(intent)
+                break
+            }
     }
 
     private fun showAlert(intent: Intent) {
@@ -103,13 +191,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun startBroadCastReceiver() {
         val filter = IntentFilter()
+        val filterBoot = IntentFilter()
         filter.addAction(Intent.ACTION_POWER_CONNECTED)
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         filter.addAction(Intent.ACTION_BATTERY_CHANGED)
+        filterBoot.addAction(Intent.ACTION_BOOT_COMPLETED)
 
 
         receiver = BatteryLevelReceiver()
         this.registerReceiver(receiver, filter)
+        receiver2 = BootReceiver()
+        this.registerReceiver(receiver2, filterBoot)
 
 
         MyConstants.batteryLevel.observe(this@MainActivity) {
@@ -143,5 +235,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
 
 }

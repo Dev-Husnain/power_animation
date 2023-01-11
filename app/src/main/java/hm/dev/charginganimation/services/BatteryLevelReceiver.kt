@@ -8,15 +8,16 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.BatteryManager
 import android.util.Log
+import android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 import android.widget.Toast
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
+import hm.dev.charginganimation.ui.Finish
 import hm.dev.charginganimation.ui.TestActivity
 import hm.dev.charginganimation.utils.MyConstants
 
 
 class BatteryLevelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+
         if (intent.action == Intent.ACTION_BATTERY_CHANGED) {
             val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
             val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
@@ -48,7 +49,8 @@ class BatteryLevelReceiver : BroadcastReceiver() {
         when (intent.action) {
             Intent.ACTION_POWER_CONNECTED -> {
                 val appIntent = Intent(context, TestActivity::class.java)
-                appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                appIntent.flags = Intent.FLAG_FROM_BACKGROUND
                 appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
                 context.startActivity(appIntent)
 
@@ -57,6 +59,11 @@ class BatteryLevelReceiver : BroadcastReceiver() {
                 Log.d("inBackground", "onReceive: connected to power")
             }
             Intent.ACTION_POWER_DISCONNECTED -> {
+                val appIntent = Intent(context, Finish::class.java)
+                appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                appIntent.flags = Intent.FLAG_FROM_BACKGROUND
+                appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+                //context.startActivity(appIntent)
                 Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT).show()
                 Log.d("inBackground", "onReceive: DiscConnected to power")
             }

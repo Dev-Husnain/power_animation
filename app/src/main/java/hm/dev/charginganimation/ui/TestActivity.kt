@@ -5,13 +5,13 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Window
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import hm.dev.charginganimation.R
-import hm.dev.charginganimation.services.BatteryLevelReceiver
 import hm.dev.charginganimation.databinding.ActivityTestBinding
+import hm.dev.charginganimation.services.BatteryLevelReceiver
 import hm.dev.charginganimation.services.BatteryService
-import hm.dev.charginganimation.utils.MyConstants
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,8 +22,14 @@ class TestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityTestBinding.inflate(layoutInflater)
+        if (Build.VERSION.SDK_INT >= 27)
+            setShowWhenLocked(true)
+        else
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+
         setContentView(binding.root)
         supportActionBar?.hide()
+
         this.packageManager.getLaunchIntentForPackage("hm.dev.charginganimation")
 
         startBroadCastReceiver()

@@ -8,12 +8,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log.d
 import androidx.core.app.NotificationCompat
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import hm.dev.charginganimation.R
 import hm.dev.charginganimation.ui.MainActivity
 import hm.dev.charginganimation.ui.TestActivity
-import java.util.concurrent.TimeUnit
 
 
 class BatteryService : Service() {
@@ -22,7 +19,6 @@ class BatteryService : Service() {
         const val CHANNEL_ID = "ForegroundServiceChannel"
 
     }
-
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -43,14 +39,16 @@ class BatteryService : Service() {
             .setContentIntent(pendingIntent)
             .build()
         startForeground(101, notification)
+        receiverThread()
         d("serviceRunning", "onStartCommand: serviceRunning")
+
 
         return START_STICKY
     }
 
 
     override fun onBind(intent: Intent?): IBinder? {
-        receiverThread()
+
         return null
     }
 
@@ -59,6 +57,7 @@ class BatteryService : Service() {
 //        startForeground(9999, Notification())
         d("serviceCreated", "onCreate: serviceCreated")
     }
+
 
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -82,15 +81,15 @@ class BatteryService : Service() {
     fun receiverThread() {
         try {
             Thread.sleep(4000)
-            val receiver =BatteryLevelReceiver()
+            val receiver = BatteryLevelReceiver()
             val filter = IntentFilter()
             val filterBoot = IntentFilter()
             filter.addAction(Intent.ACTION_POWER_CONNECTED)
             filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
             filter.addAction(Intent.ACTION_BATTERY_CHANGED)
             filterBoot.addAction(Intent.ACTION_BOOT_COMPLETED)
-           registerReceiver(receiver, filter)
-                d("receiverThreadRunning", "receiverThread: Thread running")
+            registerReceiver(receiver, filter)
+            d("receiverThreadRunning", "receiverThread: Thread running")
 
         } catch (e: InterruptedException) {
             d("serviceInterrupted", "receiverThread: ${e.message}")

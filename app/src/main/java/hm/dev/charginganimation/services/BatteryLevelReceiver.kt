@@ -8,7 +8,6 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.BatteryManager
 import android.util.Log
-import android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 import android.widget.Toast
 import hm.dev.charginganimation.ui.Finish
 import hm.dev.charginganimation.ui.TestActivity
@@ -48,10 +47,14 @@ class BatteryLevelReceiver : BroadcastReceiver() {
 
         when (intent.action) {
             Intent.ACTION_POWER_CONNECTED -> {
+                openOnLockScreen(context)
                 val appIntent = Intent(context, TestActivity::class.java)
-                appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                appIntent.flags = Intent.FLAG_FROM_BACKGROUND
-                appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+                appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_FROM_BACKGROUND or
+                        Intent.FLAG_INCLUDE_STOPPED_PACKAGES or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                appIntent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
+//                appIntent.flags = Intent.FLAG_FROM_BACKGROUND
+//                appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
                 context.startActivity(appIntent)
                 //context.sendBroadcast(appIntent)
                 Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
@@ -60,13 +63,17 @@ class BatteryLevelReceiver : BroadcastReceiver() {
             Intent.ACTION_POWER_DISCONNECTED -> {
                 val appIntent = Intent(context, Finish::class.java)
                 appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                appIntent.flags = Intent.FLAG_FROM_BACKGROUND
-                appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+//                appIntent.flags = Intent.FLAG_FROM_BACKGROUND
+//                appIntent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
                 //context.startActivity(appIntent)
                 Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT).show()
                 Log.d("inBackground", "onReceive: DiscConnected to power")
             }
         }
+
+    }
+
+    private fun openOnLockScreen(context: Context) {
 
     }
 

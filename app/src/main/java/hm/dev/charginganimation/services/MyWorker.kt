@@ -14,7 +14,7 @@ class MyWorker(val context: Context, params: WorkerParameters) : Worker(context,
     override fun doWork(): Result {
         // Perform background task here
 
-        Log.d("MyWorker", "Background task started")
+        Log.d("workManager", "Background task of work manager started")
         //applicationContext.startService(Intent(applicationContext, BatteryService::class.java))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ContextCompat.startForegroundService(context.applicationContext, Intent(context, BatteryService::class.java))

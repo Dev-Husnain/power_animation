@@ -14,6 +14,12 @@
     <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.huawei.permission.external_app_settings.USE_COMPONENT" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+  <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+
+
+
 
     <application
         android:name=".MyApp"
@@ -65,6 +71,7 @@
             android:excludeFromRecents="true"
             android:alwaysRetainTaskState="false"
             android:stateNotNeeded="true"
+            android:showOnLockScreen="true"
             android:clearTaskOnLaunch="true"
             android:finishOnTaskLaunch="true"
             android:exported="false"
@@ -98,11 +105,10 @@
                 <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
         <receiver android:name=".services.BootReceiver"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
@@ -115,6 +121,8 @@
             android:process=":powerConnected1"
             android:foregroundServiceType="dataSync"
             android:stopWithTask="false" />
+
+
 
     </application>
 

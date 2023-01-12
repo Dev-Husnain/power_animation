@@ -1,6 +1,9 @@
 package hm.dev.charginganimation.ui
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -8,18 +11,17 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import androidx.activity.result.contract.ActivityResultContracts
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.work.*
 import hm.dev.charginganimation.R
 import hm.dev.charginganimation.databinding.ActivityMainBinding
-import hm.dev.charginganimation.services.BatteryLevelReceiver
-import hm.dev.charginganimation.services.BatteryService
-import hm.dev.charginganimation.services.BootReceiver
-import hm.dev.charginganimation.services.MyWorker
+import hm.dev.charginganimation.services.*
 import hm.dev.charginganimation.utils.MyConstants
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -37,37 +39,83 @@ class MainActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
 
-       workManager()
-        startBroadCastReceiver()
+        workManager()
+
         //getAutoStartPermission()
 
 
 
         //oppoAutoPermission()
 
-
-
+        startBroadCastReceiver()
+        doNotKillApp()
+        setAlarmToStartService()
 
 
     }
 
 
+    private fun setAlarmToStartService() {
+        val pendingIntent2= if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE
+        else PendingIntent.FLAG_UPDATE_CURRENT
+        val serviceIntent = Intent(this, BatteryService::class.java)
+        val pendingIntent = PendingIntent.getService(this, 0, serviceIntent, pendingIntent2)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = System.currentTimeMillis()
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, 5000,  pendingIntent) // repeat every 5 seconds
+        Log.d("workManager", "setAlarmToStartService: Alarm scheduled at ${calendar.timeInMillis+5000}")
+
+    }
+
+    private fun doNotKillApp() {
+        val component = ComponentName(this, BatteryLevelReceiver::class.java)
+        val pm: PackageManager = applicationContext.packageManager
+        pm.setComponentEnabledSetting(
+            component,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP)
+
+
+//        val componentService = ComponentName(this, BatteryService::class.java)
+//        val pmService: PackageManager = applicationContext.packageManager
+//        pmService.setComponentEnabledSetting(
+//            componentService,
+//            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+//            PackageManager.DONT_KILL_APP)
+    }
+
 
     private fun workManager() {
+        val UNIQUE_WORK_NAME = "StartMyServiceViaWorker"
         val constraints= Constraints.Builder()
             .setRequiresCharging(true)
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
         val repeatingWork = PeriodicWorkRequestBuilder<MyWorker>(5, TimeUnit.SECONDS)
-            .setInitialDelay(10, TimeUnit.SECONDS)
+            .setInitialDelay(5, TimeUnit.SECONDS)
             .setBackoffCriteria(BackoffPolicy.LINEAR, 5, TimeUnit.SECONDS)
             .setConstraints(constraints)
             .build()
-        WorkManager.getInstance(this).enqueue(repeatingWork)
 
+        //WorkManager.getInstance(this).enqueue(repeatingWork)
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(UNIQUE_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, repeatingWork)
 
-//        val onetimework= OneTimeWorkRequestBuilder<MyWorker>().setInitialDelay(15,TimeUnit.SECONDS).build()
-//        WorkManager.getInstance(this).enqueue(onetimework)
+        val workInfo = WorkManager.getInstance(this)
+            .getWorkInfosForUniqueWorkLiveData(UNIQUE_WORK_NAME)
+        workInfo.observe(this){
+            if (it != null && it.isNotEmpty()) {
+                val state = it[0].state
+                if (state.isFinished) {
+                    Log.d("workManager", "onCreate: work manager finished")
+                }else{
+                    Log.d("workManager", "onCreate: work manager running")
+                }
+            }else{
+                Log.d("workManager", "onCreate: work manager is empty")
+            }
+        }
+
 
     }
 
@@ -211,8 +259,8 @@ class MainActivity : AppCompatActivity() {
         filterBoot.addAction(Intent.ACTION_BOOT_COMPLETED)
 
 
-        receiver = BatteryLevelReceiver()
-        this.registerReceiver(receiver, filter)
+//        receiver = BatteryLevelReceiver()
+//        this.registerReceiver(receiver, filter)
         receiver2 = BootReceiver()
         this.registerReceiver(receiver2, filterBoot)
 
@@ -248,6 +296,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
 
 
 }

@@ -1,19 +1,27 @@
 package hm.dev.charginganimation.ui
 
+import android.app.KeyguardManager
+import android.app.WallpaperManager
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.PixelFormat
+import android.graphics.drawable.BitmapDrawable
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
-import android.view.Window
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import hm.dev.charginganimation.R
 import hm.dev.charginganimation.databinding.ActivityTestBinding
 import hm.dev.charginganimation.services.BatteryLevelReceiver
 import hm.dev.charginganimation.services.BatteryService
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 class TestActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTestBinding
@@ -22,19 +30,20 @@ class TestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityTestBinding.inflate(layoutInflater)
-        if (Build.VERSION.SDK_INT >= 27)
-            setShowWhenLocked(true)
-        else
-            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+
+        showOnLock()
 
         setContentView(binding.root)
+
         supportActionBar?.hide()
+
 
         this.packageManager.getLaunchIntentForPackage("hm.dev.charginganimation")
 
         startBroadCastReceiver()
 
         setTimeAndBattery()
+
 
 
 
@@ -76,4 +85,23 @@ class TestActivity : AppCompatActivity() {
         }
 
     }
+    fun showOnLock(){
+
+        window.setBackgroundDrawableResource(android.R.color.transparent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+            window.addFlags(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+            val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            keyguardManager.requestDismissKeyguard(this, null)
+        } else {
+            window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+
+            )
+        }
+    }
+
 }

@@ -2,21 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE" />
-    <uses-permission
-        android:name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND"
-        tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="com.huawei.permission.external_app_settings.USE_COMPONENT" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
-  <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND"/>
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
+
+
+
 
 
 
@@ -41,22 +44,22 @@
         </activity>
         <activity
             android:name=".ui.MainActivity"
-            android:exported="false"
-            android:enabled="true"
             android:allowTaskReparenting="true"
-            android:noHistory="true"
-            android:excludeFromRecents="true"
             android:alwaysRetainTaskState="false"
-            android:stateNotNeeded="true"
             android:clearTaskOnLaunch="true"
+            android:enabled="true"
+            android:excludeFromRecents="true"
+            android:exported="false"
             android:finishOnTaskLaunch="true"
-            android:process=":powerConnected1">
+            android:noHistory="true"
+            android:process=":powerConnected1"
+            android:stateNotNeeded="true">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".ui.DisplayOverApp"
+            android:name=".ui.AskPermissions"
             android:exported="false"
             android:label="Display Over Other Apps">
             <meta-data
@@ -65,18 +68,18 @@
         </activity>
         <activity
             android:name=".ui.TestActivity"
-            android:enabled="true"
             android:allowTaskReparenting="true"
-            android:noHistory="true"
-            android:excludeFromRecents="true"
             android:alwaysRetainTaskState="false"
-            android:stateNotNeeded="true"
-            android:showOnLockScreen="true"
             android:clearTaskOnLaunch="true"
-            android:finishOnTaskLaunch="true"
+            android:enabled="true"
+            android:excludeFromRecents="true"
             android:exported="false"
+            android:finishOnTaskLaunch="true"
+            android:label="Test Activity"
+            android:noHistory="true"
             android:process=":PowerConnected1"
-            android:label="Test Activity">
+            android:showOnLockScreen="true"
+            android:stateNotNeeded="true">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -99,30 +102,41 @@
             android:name=".services.BatteryLevelReceiver"
             android:enabled="true"
             android:exported="false"
-            android:process=":powerConnected1"
-            android:priority="1000">
+            android:priority="1000"
+            android:process=":powerConnected1">
             <intent-filter>
                 <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".services.BootReceiver"
+
+        <receiver
+            android:name=".services.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
         <service
             android:name=".services.BatteryService"
             android:enabled="true"
             android:exported="false"
-            android:process=":powerConnected1"
             android:foregroundServiceType="dataSync"
+            android:process=":powerConnected1"
             android:stopWithTask="false" />
-
-
+        <service
+            android:name=".services.NotificationListener"
+            android:enabled="true"
+            android:label="@string/accessibility_service_description"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
     </application>
 

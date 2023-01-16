@@ -7,4 +7,6 @@
     <string name="connected">Power is Connected</string>
     <string name="not_connected">Not Connected</string>
     <string name="_3_22_am">3:22 AM</string>
+    <string name="accessibility_service_description">We want permission to listen the incoming notifications and this is the core functionality of my application.</string>
+    <string name="reply_label">Tap to view</string>
 </resources>

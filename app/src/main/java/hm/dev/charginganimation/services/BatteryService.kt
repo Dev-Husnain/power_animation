@@ -47,6 +47,7 @@ class BatteryService : Service() {
             .setSmallIcon(R.drawable.ic_baseline_notifications_24)
             .setContentIntent(pendingIntent)
             .setVisibility(VISIBILITY_PUBLIC)
+            .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)

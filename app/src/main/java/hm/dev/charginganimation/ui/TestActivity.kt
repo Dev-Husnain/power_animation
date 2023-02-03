@@ -1,20 +1,16 @@
 package hm.dev.charginganimation.ui
 
 import android.app.KeyguardManager
-import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.PixelFormat
-import android.graphics.drawable.BitmapDrawable
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
-import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import hm.dev.charginganimation.R
 import hm.dev.charginganimation.databinding.ActivityTestBinding
 import hm.dev.charginganimation.services.BatteryLevelReceiver
@@ -29,22 +25,23 @@ class TestActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityTestBinding.inflate(layoutInflater)
+        binding = ActivityTestBinding.inflate(layoutInflater)
 
         showOnLock()
+
 
         setContentView(binding.root)
 
         supportActionBar?.hide()
 
+        Glide.with(this).load(R.drawable.charging14).into(binding.chargerSelectedAnimation);
 
-        this.packageManager.getLaunchIntentForPackage("hm.dev.charginganimation")
+
+        this.packageManager.getLaunchIntentForPackage(packageName)
 
         startBroadCastReceiver()
 
         setTimeAndBattery()
-
-
 
 
     }
@@ -54,15 +51,15 @@ class TestActivity : AppCompatActivity() {
         val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
         val batteryRemaining = level / scale.toFloat() * 100
         val simpleTime = SimpleDateFormat("hh:mm a")
-        val simpleDate=SimpleDateFormat("EEEE dd MMMM yyyy")
+        val simpleDate = SimpleDateFormat("EEEE dd MMMM yyyy")
         val currentTime = simpleTime.format(Date())
         val currentDate = simpleDate.format(Date())
-        binding.currentTimeDate.text= buildString {
+        binding.currentTimeDate.text = buildString {
             append(currentTime)
             append(" \n ")
             append(currentDate)
         }
-        binding.batteryCharged.text= buildString {
+        binding.batteryCharged.text = buildString {
             append((batteryRemaining.toInt()).toString())
             append("%")
         }
@@ -85,8 +82,8 @@ class TestActivity : AppCompatActivity() {
         }
 
     }
-    fun showOnLock(){
 
+    private fun showOnLock() {
         window.setBackgroundDrawableResource(android.R.color.transparent)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
@@ -95,13 +92,16 @@ class TestActivity : AppCompatActivity() {
             val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
             keyguardManager.requestDismissKeyguard(this, null)
         } else {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 
             )
         }
     }
+
+
 
 }

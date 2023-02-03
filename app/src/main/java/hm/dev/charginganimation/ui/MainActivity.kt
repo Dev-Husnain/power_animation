@@ -1,6 +1,7 @@
 package hm.dev.charginganimation.ui
 
-import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.ComponentName
@@ -12,14 +13,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.work.BackoffPolicy
 import androidx.work.PeriodicWorkRequest
@@ -37,15 +34,17 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var receiver2: BootReceiver
-    private val REQUEST_CODE = 1
-    val lockScreenPermissionRequest =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission granted
+    private lateinit var rebootReceiver: BootReceiver
+
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Toast.makeText(applicationContext, "Permission granted", Toast.LENGTH_SHORT).show()
             } else {
-                // Permission denied
+                Toast.makeText(applicationContext, "Permission not granted", Toast.LENGTH_SHORT)
+                    .show()
             }
+
         }
 
 
@@ -58,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         //workManager()
 
         //getAutoStartPermission()
+        // xiaomiBGPermission()
 
 
         //oppoAutoPermission()
@@ -66,19 +66,20 @@ class MainActivity : AppCompatActivity() {
         doNotKillApp()
         getDeviceInfo()
         setAlarmToStartService()
-        //notificationsPermission()
 
+
+        //notificationsPermission()
 
 
     }
 
+    @SuppressLint("HardwareIds")
     private fun getDeviceInfo() {
         val brandName = Build.BRAND
         val iD = Build.ID
         val deviceModel = Build.MODEL
         val deviceId = Settings.Secure.getString(
-            applicationContext.contentResolver,
-            Settings.Secure.ANDROID_ID
+            applicationContext.contentResolver, Settings.Secure.ANDROID_ID
         )
         val sDk = Build.VERSION.SDK_INT
         val manufacturer = Build.MANUFACTURER
@@ -96,14 +97,17 @@ class MainActivity : AppCompatActivity() {
         val version = Build.VERSION.RELEASE
         Log.d(
             "getDeviceInfo",
-            "getDeviceInfo: Brand: $brandName, IDs: $iD/$deviceId, $deviceModel, " +
-                    "SDK: $sDk,Manufacturer: $manufacturer,User: $user,Type: $type,Base: $base,incremental: $incremental, version: $version  "
+            "getDeviceInfo: Brand: $brandName, IDs: $iD/$deviceId, $deviceModel, " + "SDK: $sDk,Manufacturer: $manufacturer,User: $user,Type: $type,Base: $base,incremental: $incremental, version: $version  "
         )
 
     }
 
     private fun notificationsPermission() {
-        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+        } else {
+            TODO("VERSION.SDK_INT < LOLLIPOP_MR1")
+        }
         startActivity(intent)
 
 
@@ -125,10 +129,7 @@ class MainActivity : AppCompatActivity() {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = System.currentTimeMillis()
         alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            5000,
-            pendingIntent
+            AlarmManager.RTC_WAKEUP, calendar.timeInMillis, 60000, pendingIntent
         ) // repeat every 5 seconds
         Log.d(
             "workManager",
@@ -141,9 +142,7 @@ class MainActivity : AppCompatActivity() {
         val component = ComponentName(this, BatteryLevelReceiver::class.java)
         val pm: PackageManager = applicationContext.packageManager
         pm.setComponentEnabledSetting(
-            component,
-            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-            PackageManager.DONT_KILL_APP
+            component, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP
         )
 
 
@@ -158,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun workManager() {
-        val UNIQUE_WORK_NAME = "StartMyServiceViaWorker"
+        val uniqueWorkName = "StartMyServiceViaWorker"
 //        val constraints= Constraints.Builder()
 //            .setRequiresCharging(true)
 //            .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -166,22 +165,16 @@ class MainActivity : AppCompatActivity() {
 
 //        val repeatingWork = PeriodicWorkRequestBuilder<MyWorker>(5, TimeUnit.SECONDS)
         val repeatingWork = PeriodicWorkRequest.Builder(
-            MyWorker::class.java,
-            15,
-            TimeUnit.MINUTES,
-            5,
-            TimeUnit.MINUTES
-        )
-            .setInitialDelay(5, TimeUnit.SECONDS)
-            .setBackoffCriteria(BackoffPolicy.LINEAR, 5, TimeUnit.SECONDS)
-            .addTag(UNIQUE_WORK_NAME)
+            MyWorker::class.java, 15, TimeUnit.MINUTES, 5, TimeUnit.MINUTES
+        ).setInitialDelay(5, TimeUnit.SECONDS)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 5, TimeUnit.SECONDS).addTag(uniqueWorkName)
             .build()
 
         WorkManager.getInstance(this).enqueue(repeatingWork)
         //WorkManager.getInstance(this).enqueueUniquePeriodicWork(UNIQUE_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, repeatingWork)
 
-        val workInfo = WorkManager.getInstance(this)
-            .getWorkInfosForUniqueWorkLiveData(UNIQUE_WORK_NAME)
+        val workInfo =
+            WorkManager.getInstance(this).getWorkInfosForUniqueWorkLiveData(uniqueWorkName)
         workInfo.observe(this) {
             if (it != null && it.isNotEmpty()) {
                 val state = it[0].state
@@ -209,26 +202,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getAutoStartPermission() {
-        val POWERMANAGER_INTENTS = arrayOf(
+        val powerManagerIntents = arrayOf(
             Intent().setComponent(
                 ComponentName(
                     "com.miui.securitycenter",
                     "com.miui.permcenter.autostart.AutoStartManagementActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.letv.android.letvsafe",
-                    "com.letv.android.letvsafe.AutobootManageActivity"
+                    "com.letv.android.letvsafe", "com.letv.android.letvsafe.AutobootManageActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
                     "com.huawei.systemmanager",
                     "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
                     "com.huawei.systemmanager",
                     "com.huawei.systemmanager.optimize.process.ProtectActivity"
@@ -247,61 +236,46 @@ class MainActivity : AppCompatActivity() {
                     "com.coloros.safecenter",
                     "com.coloros.safecenter.permission.startup.StartupAppListActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
                     "com.coloros.safecenter",
                     "com.coloros.safecenter.startupapp.StartupAppListActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.oppo.safe",
-                    "com.oppo.safe.permission.startup.StartupAppListActivity"
+                    "com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.oppo.safe",
-                    "com.oppo.safe.permission.floatwindow.FloatWindowListActivity"
+                    "com.oppo.safe", "com.oppo.safe.permission.floatwindow.FloatWindowListActivity"
                 )
             ),
 
 
             Intent().setComponent(
                 ComponentName(
-                    "com.iqoo.secure",
-                    "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
+                    "com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.iqoo.secure",
-                    "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"
+                    "com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
                     "com.vivo.permissionmanager",
                     "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.samsung.android.lool",
-                    "com.samsung.android.sm.ui.battery.BatteryActivity"
+                    "com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.htc.pitroad",
-                    "com.htc.pitroad.landingpage.activity.LandingPageActivity"
+                    "com.htc.pitroad", "com.htc.pitroad.landingpage.activity.LandingPageActivity"
                 )
-            ),
-            Intent().setComponent(
+            ), Intent().setComponent(
                 ComponentName(
-                    "com.asus.mobilemanager",
-                    "com.asus.mobilemanager.MainActivity"
+                    "com.asus.mobilemanager", "com.asus.mobilemanager.MainActivity"
 
                 )
             )
@@ -309,25 +283,17 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        for (intent in POWERMANAGER_INTENTS)
-            if (packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
-                // show dialog to ask user action
-                showAlert(intent)
-                break
-            }
+        for (intent in powerManagerIntents) if (packageManager.resolveActivity(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            ) != null
+        ) {
+            // show dialog to ask user action
+            startActivity(intent)
+            break
+        }
     }
 
-    private fun showAlert(intent: Intent) {
-        val dialog = AlertDialog.Builder(this)
-        dialog.setMessage("On this device you must allow us to run services in background")
-            .setPositiveButton("Give Permission") { _, _ ->
-                startActivity(intent)
-            }
-            .setNegativeButton("Cancel") { _, _ -> finish() }
-        dialog.show()
-
-
-    }
 
     private fun startBroadCastReceiver() {
         val filter = IntentFilter()
@@ -338,10 +304,8 @@ class MainActivity : AppCompatActivity() {
         filterBoot.addAction(Intent.ACTION_BOOT_COMPLETED)
 
 
-//        receiver = BatteryLevelReceiver()
-//        this.registerReceiver(receiver, filter)
-        receiver2 = BootReceiver()
-        this.registerReceiver(receiver2, filterBoot)
+        rebootReceiver = BootReceiver()
+        this.registerReceiver(rebootReceiver, filterBoot)
 
 
         MyConstants.batteryLevel.observe(this@MainActivity) {
@@ -376,6 +340,25 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+    private fun xiaomiBGPermission() {
+        if (Build.MANUFACTURER.equals("Xiaomi", true)) {
+            try {
+                val intent = Intent("miui.intent.action.APP_PERM_EDITOR")
+                intent.setClassName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.permissions.PermissionsEditorActivity"
+                )
+                intent.putExtra("extra_pkgname", packageName)
+                // this.startActivity(intent)
+                permissionLauncher.launch(intent)
+            } catch (e: Exception) {
+                // Handle the exception, for example by showing a message to the user
+                //Toast.makeText(this, "Permission editor not found", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+    }
 
 
 }

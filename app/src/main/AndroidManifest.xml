@@ -22,8 +22,6 @@
 
 
 
-
-
     <application
         android:name=".MyApp"
         android:allowBackup="true"
@@ -42,6 +40,7 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
         <activity
             android:name=".ui.MainActivity"
             android:allowTaskReparenting="true"
@@ -53,11 +52,13 @@
             android:finishOnTaskLaunch="true"
             android:noHistory="true"
             android:process=":powerConnected1"
-            android:stateNotNeeded="true">
+            android:stateNotNeeded="true"
+            >
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
         <activity
             android:name=".ui.AskPermissions"
             android:exported="false"
@@ -66,12 +67,16 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
         <activity
             android:name=".ui.TestActivity"
             android:allowTaskReparenting="true"
             android:alwaysRetainTaskState="false"
             android:clearTaskOnLaunch="true"
             android:enabled="true"
+            android:showWhenLocked="true"
+            android:inheritShowWhenLocked="true"
+            android:showForAllUsers="true"
             android:excludeFromRecents="true"
             android:exported="false"
             android:finishOnTaskLaunch="true"
@@ -79,11 +84,13 @@
             android:noHistory="true"
             android:process=":PowerConnected1"
             android:showOnLockScreen="true"
-            android:stateNotNeeded="true">
+            android:stateNotNeeded="true"
+            >
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
         <activity
             android:name=".ui.Splash"
             android:exported="true">
@@ -127,6 +134,7 @@
             android:foregroundServiceType="dataSync"
             android:process=":powerConnected1"
             android:stopWithTask="false" />
+
         <service
             android:name=".services.NotificationListener"
             android:enabled="true"
